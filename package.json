@@ -1,0 +1,8 @@
+{
+  "name": "voxlux",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "edge-tts-universal": "^1.4.0"
+  }
+}
