@@ -20,7 +20,10 @@ API keys, no signup.
 
 ```
 .
-├── index.html          # UI — dropdowns, player, download
+├── index.html                    # Documents Manager (hub)
+├── dm_voiceStudio.html           # Voice Studio (hub)
+├── dm_voiceStudio_TTS.html       # Text → Speech → MP3
+├── dm_voiceStudio_VS.html        # Voice Separator (placeholder)
 ├── tts.js              # Netlify Function: Edge TTS + Google fallback
 ├── netlify.toml        # build / function / redirect config
 ├── package.json

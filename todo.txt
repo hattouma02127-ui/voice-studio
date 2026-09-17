@@ -67,3 +67,10 @@ Parking lot
       requirement. Removes the "unofficial API" risk entirely.
 [ ] Add tests for chunkText() boundary cases.
 [ ] Add .env.example with the expected variable names.
+
+Architecture
+------------
+[x] Split into Documents Manager / Voice Studio / TTS
+[ ] Extract shared hub CSS into dm.css once a 4th page appears
+[ ] Add a search/filter bar on Documents Manager when card count > ~8
+[ ] Consider a shared dm-header custom element to dedupe breadcrumbs
