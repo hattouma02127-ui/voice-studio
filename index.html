@@ -1,605 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VoxLux — Text to Speech (FR · EN · AR)</title>
-<style>
-:root{
-  --bg:#070a12;
-  --border:rgba(255,255,255,.09);
-  --border-strong:rgba(255,255,255,.17);
-  --text:#e9edf7;
-  --muted:#8b93a8;
-  --a1:#6366f1; --a2:#a855f7; --a3:#ec4899;
-  --ok:#34d399; --warn:#fbbf24; --err:#f87171;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;min-height:100vh;background:var(--bg);color:var(--text);
-  font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",
-              "Noto Sans Arabic","Noto Naskh Arabic",Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;overflow-x:hidden;
-}
-body::before{
-  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:
-    radial-gradient(58% 46% at 12% -4%, rgba(99,102,241,.32), transparent 62%),
-    radial-gradient(48% 42% at 88% 6%, rgba(168,85,247,.26), transparent 62%),
-    radial-gradient(64% 52% at 50% 108%, rgba(236,72,153,.18), transparent 62%);
-}
-.wrap{max-width:1200px;margin:0 auto;padding:34px 22px 70px}
-
-header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:26px}
-.brand{display:flex;align-items:center;gap:14px}
-.logo{
-  width:52px;height:52px;border-radius:16px;flex:0 0 auto;
-  background:linear-gradient(135deg,var(--a1),var(--a2) 55%,var(--a3));
-  display:grid;place-items:center;font-size:24px;color:#fff;
-  box-shadow:0 14px 34px -12px rgba(139,92,246,.9), inset 0 1px 0 rgba(255,255,255,.35);
-}
-.brand h1{
-  margin:0;font-size:26px;letter-spacing:-.02em;font-weight:800;
-  background:linear-gradient(100deg,#fff,#c9c3ff 60%,#f0a6d8);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.brand p{margin:3px 0 0;font-size:12.5px;color:var(--muted);letter-spacing:.02em}
-.pill{
-  display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;
-  font-size:12.5px;font-weight:600;background:rgba(255,255,255,.05);
-  border:1px solid var(--border);color:var(--muted);backdrop-filter:blur(12px);
-}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
-.dot.warn{background:var(--warn);box-shadow:0 0 10px var(--warn)}
-.dot.bad{background:var(--err);box-shadow:0 0 10px var(--err)}
-
-.grid{display:grid;grid-template-columns:1.55fr 1fr;gap:20px;align-items:start}
-@media(max-width:940px){.grid{grid-template-columns:1fr}}
-.col{display:flex;flex-direction:column;gap:20px}
-
-.card{
-  background:linear-gradient(180deg,rgba(255,255,255,.062),rgba(255,255,255,.018));
-  border:1px solid var(--border);border-radius:22px;padding:20px;
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  box-shadow:0 26px 60px -30px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05);
-}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.card-head h2{margin:0;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.counter{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-
-textarea{
-  width:100%;min-height:360px;resize:vertical;background:rgba(3,6,15,.6);
-  border:1px solid var(--border);border-radius:16px;color:var(--text);
-  padding:17px 18px;font-family:inherit;font-size:16px;line-height:1.72;
-  outline:none;transition:border-color .2s, box-shadow .2s;display:block;
-}
-textarea::placeholder{color:#5c6479}
-textarea:focus{border-color:rgba(139,124,255,.65);box-shadow:0 0 0 4px rgba(99,102,241,.14)}
-.editor-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
-.stats{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-
-.field{margin-bottom:15px}
-.field:last-child{margin-bottom:0}
-label{
-  display:flex;justify-content:space-between;align-items:baseline;
-  font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:8px;
-}
-label .val{font-size:12px;color:#c8cee0;letter-spacing:0;text-transform:none;font-weight:600}
-
-select{
-  width:100%;padding:11px 38px 11px 13px;border-radius:12px;border:1px solid var(--border);
-  background-color:rgba(3,6,15,.62);color:var(--text);font:inherit;font-size:14px;
-  appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;
-  transition:border-color .2s, box-shadow .2s;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b93a8' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
-  background-repeat:no-repeat;background-position:right 13px center;text-overflow:ellipsis;
-}
-select:focus{border-color:rgba(139,124,255,.65);box-shadow:0 0 0 4px rgba(99,102,241,.14)}
-select option{background:#0b0f1a;color:#e9edf7}
-
-.segmented{display:flex;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px}
-.segmented button{
-  flex:1;background:transparent;border:none;color:var(--muted);padding:9px 10px;
-  border-radius:9px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
-  transition:all .2s;white-space:nowrap;
-}
-.segmented button.active{
-  background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;
-  box-shadow:0 4px 14px -4px rgba(139,92,246,.85);
-}
-
-input[type=range]{
-  -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;outline:none;
-  background:linear-gradient(90deg,var(--a1),var(--a2) 55%,var(--a3));cursor:pointer;
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:none;
-  cursor:grab;box-shadow:0 0 0 5px rgba(255,255,255,.12), 0 3px 10px rgba(0,0,0,.6);
-}
-input[type=range]::-moz-range-thumb{
-  width:18px;height:18px;border-radius:50%;background:#fff;border:none;cursor:grab;
-  box-shadow:0 0 0 5px rgba(255,255,255,.12), 0 3px 10px rgba(0,0,0,.6);
-}
-
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  padding:12px 18px;border-radius:13px;border:1px solid var(--border);
-  background:rgba(255,255,255,.055);color:var(--text);font:inherit;font-size:14px;font-weight:600;
-  cursor:pointer;white-space:nowrap;
-  transition:transform .16s, background .16s, border-color .16s, box-shadow .16s, opacity .16s;
-}
-.btn:hover:not(:disabled){background:rgba(255,255,255,.11);transform:translateY(-1px);border-color:var(--border-strong)}
-.btn:active:not(:disabled){transform:translateY(0) scale(.985)}
-.btn:disabled{opacity:.34;cursor:not-allowed}
-.btn.primary{
-  background:linear-gradient(135deg,var(--a1),var(--a2) 70%,var(--a3));
-  border-color:transparent;color:#fff;
-  box-shadow:0 16px 36px -14px rgba(139,92,246,.95), inset 0 1px 0 rgba(255,255,255,.28);
-}
-.btn.ghost{background:transparent}
-.btn.danger:hover:not(:disabled){background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.45)}
-.btn.wide{width:100%}
-.btn svg{width:16px;height:16px;flex:0 0 auto}
-.btn-row{display:flex;gap:10px;flex-wrap:wrap}
-.btn-row .btn{flex:1 1 auto}
-
-.progress{height:7px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin:16px 0 10px}
-.progress .bar{
-  height:100%;width:0%;border-radius:99px;
-  background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));
-  box-shadow:0 0 16px rgba(168,85,247,.75);
-  transition:width .35s cubic-bezier(.4,0,.2,1);
-}
-.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-
-.note{
-  font-size:12.5px;line-height:1.62;color:var(--muted);
-  background:rgba(255,255,255,.035);border:1px solid var(--border);
-  border-left:3px solid rgba(139,124,255,.6);border-radius:12px;padding:12px 14px;margin-bottom:15px;
-}
-.note b{color:#c8cee0;font-weight:600}
-.status{font-size:12.5px;color:var(--muted);margin-top:12px;min-height:18px;line-height:1.5}
-.status.ok{color:var(--ok)}
-.status.err{color:var(--err)}
-.status.warn{color:var(--warn)}
-
-#toast{
-  position:fixed;left:50%;bottom:30px;transform:translate(-50%,26px);
-  background:rgba(16,20,32,.96);border:1px solid var(--border-strong);
-  color:var(--text);padding:13px 20px;border-radius:14px;
-  font-size:13.5px;font-weight:500;max-width:min(90vw,460px);text-align:center;
-  box-shadow:0 22px 50px -18px rgba(0,0,0,1);backdrop-filter:blur(16px);
-  opacity:0;pointer-events:none;transition:opacity .28s, transform .28s;z-index:99;
-}
-#toast.show{opacity:1;transform:translate(-50%,0)}
-
-::-webkit-scrollbar{width:11px;height:11px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:99px;border:3px solid transparent;background-clip:content-box}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Free Text → MP3</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    textarea { width: 100%; height: 150px; padding: .5rem; font-size: 1rem; }
+    select, button { padding: .6rem 1rem; margin: .5rem .5rem .5rem 0; font-size: 1rem; cursor: pointer; }
+    audio { display: block; margin-top: 1rem; width: 100%; }
+    #status { color: #555; margin-top: 1rem; }
+  </style>
 </head>
 <body>
-<div class="wrap">
+  <h1>Free Text → Speech → MP3</h1>
 
-  <header>
-    <div class="brand">
-      <div class="logo">◍</div>
-      <div>
-        <h1>VoxLux</h1>
-        <p>Text&nbsp;to&nbsp;speech · Synthèse vocale · تحويل النص إلى كلام</p>
-      </div>
-    </div>
-    <div class="pill"><span class="dot" id="engineDot"></span><span id="engineText">Ready</span></div>
-  </header>
+  <textarea id="text">For the Buccaneers. I want something Free. Uh and uh as it was.</textarea>
 
-  <div class="grid">
+  <div>
+    <select id="voice">
+      <option value="Brian">Brian (US Male)</option>
+      <option value="Amy">Amy (US Female)</option>
+      <option value="Emma">Emma (UK Female)</option>
+      <option value="Joanna">Joanna (US Female)</option>
+      <option value="Matthew">Matthew (US Male)</option>
+      <option value="Salli">Salli (US Female)</option>
+    </select>
 
-    <section class="card">
-      <div class="card-head">
-        <h2>Text · Texte · النص</h2>
-        <span class="counter" id="counter">0 characters</span>
-      </div>
-      <textarea id="text" dir="auto" spellcheck="false"
-        placeholder="Type or paste your text here… / Collez ou tapez votre texte ici… / الصق النص هنا…"></textarea>
-      <div class="editor-foot">
-        <div class="stats" id="stats">0 words · 0 chunks · ~0:00</div>
-        <div class="btn-row" style="flex:0 0 auto">
-          <button class="btn ghost" id="clearBtn">Clear</button>
-          <button class="btn ghost" id="sampleBtn">Example</button>
-        </div>
-      </div>
-    </section>
-
-    <div class="col">
-
-      <section class="card">
-        <div class="card-head"><h2>Voice · Voix · الصوت</h2></div>
-
-        <div class="field">
-          <label for="lang">Language</label>
-          <select id="lang"></select>
-        </div>
-
-        <div class="field">
-          <label for="rate">Speed <span class="val" id="rateVal">1.00×</span></label>
-          <input type="range" id="rate" min="0.5" max="1.5" step="0.05" value="1">
-        </div>
-
-        <div class="field">
-          <label for="volume">Volume <span class="val" id="volumeVal">100%</span></label>
-          <input type="range" id="volume" min="0" max="1" step="0.05" value="1">
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><h2>Playback</h2></div>
-        <div class="btn-row">
-          <button class="btn primary" id="playBtn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Play
-          </button>
-          <button class="btn" id="pauseBtn" disabled>
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Pause
-          </button>
-          <button class="btn danger" id="stopBtn" disabled>
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>Stop
-          </button>
-        </div>
-        <div class="progress"><div class="bar" id="bar"></div></div>
-        <div class="progress-meta">
-          <span id="progressLabel">—</span>
-          <span id="progressTime"></span>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><h2>Download</h2></div>
-        <div class="note">
-          <b>Edge TTS:</b> free, no registration, high-quality neural voices. MP3 is built in the browser and downloaded in one click.
-        </div>
-        <button class="btn primary wide" id="downloadBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-          Generate &amp; download MP3
-        </button>
-        <div class="status" id="downloadStatus"></div>
-      </section>
-
-    </div>
+    <button id="playBtn">Play</button>
+    <button id="downloadBtn">Download MP3</button>
   </div>
-</div>
 
-<audio id="player" preload="metadata"></audio>
-<div id="toast"></div>
+  <audio id="player" controls></audio>
+  <div id="status"></div>
 
-<script>
-"use strict";
-const $ = id => document.getElementById(id);
-const els = {
-  text:$("text"), counter:$("counter"), stats:$("stats"),
-  lang:$("lang"), rate:$("rate"), volume:$("volume"),
-  rateVal:$("rateVal"), volumeVal:$("volumeVal"),
-  playBtn:$("playBtn"), pauseBtn:$("pauseBtn"), stopBtn:$("stopBtn"),
-  bar:$("bar"), progressLabel:$("progressLabel"), progressTime:$("progressTime"),
-  downloadBtn:$("downloadBtn"), downloadStatus:$("downloadStatus"),
-  engineDot:$("engineDot"), engineText:$("engineText"),
-  clearBtn:$("clearBtn"), sampleBtn:$("sampleBtn"),
-  toast:$("toast"), player:$("player")
-};
+  <script>
+    const textEl = document.getElementById('text');
+    const voiceEl = document.getElementById('voice');
+    const player = document.getElementById('player');
+    const statusEl = document.getElementById('status');
 
-/* ---------- Edge TTS language → voice mapping ---------- */
-const LANGUAGES = [
-  { code:"en-US", voice:"en-US-AriaNeural", label:"🇺🇸 English (US)" },
-  { code:"en-GB", voice:"en-GB-SoniaNeural", label:"🇬🇧 English (UK)" },
-  { code:"fr-FR", voice:"fr-FR-DeniseNeural", label:"🇫🇷 Français (France)" },
-  { code:"fr-CA", voice:"fr-CA-SylvieNeural", label:"🇨🇦 Français (Canada)" },
-  { code:"ar-SA", voice:"ar-SA-ZariyahNeural", label:"🇸🇦 العربية (السعودية)" },
-  { code:"ar-EG", voice:"ar-EG-SalmaNeural", label:"🇪🇬 العربية (مصر)" },
-  { code:"es-ES", voice:"es-ES-ElviraNeural", label:"🇪🇸 Español" },
-  { code:"de-DE", voice:"de-DE-KatjaNeural", label:"🇩🇪 Deutsch" },
-  { code:"it-IT", voice:"it-IT-ElsaNeural", label:"🇮🇹 Italiano" },
-  { code:"pt-BR", voice:"pt-BR-FranciscaNeural", label:"🇧🇷 Português (BR)" },
-  { code:"ru-RU", voice:"ru-RU-SvetlanaNeural", label:"🇷🇺 Русский" },
-  { code:"nl-NL", voice:"nl-NL-FennaNeural", label:"🇳🇱 Nederlands" },
-  { code:"pl-PL", voice:"pl-PL-ZofiaNeural", label:"🇵🇱 Polski" },
-  { code:"tr-TR", voice:"tr-TR-EmelNeural", label:"🇹🇷 Türkçe" },
-  { code:"ja-JP", voice:"ja-JP-NanamiNeural", label:"🇯🇵 日本語" },
-  { code:"ko-KR", voice:"ko-KR-SunHiNeural", label:"🇰🇷 한국어" },
-  { code:"zh-CN", voice:"zh-CN-XiaoxiaoNeural", label:"🇨🇳 中文 (简体)" },
-  { code:"hi-IN", voice:"hi-IN-SwaraNeural", label:"🇮🇳 हिन्दी" }
-];
-
-const state = {
-  lang:"fr-FR",
-  rate:1, volume:1,
-  audioBlob:null, audioUrl:null, cacheKey:"",
-  synthesizing:false, cancelToken:0
-};
-
-/* ---------- UI helpers ---------- */
-let toastTimer;
-function toast(msg, ms=3800){
-  els.toast.textContent = msg;
-  els.toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>els.toast.classList.remove("show"), ms);
-}
-function fmtTime(s){
-  s = Math.max(0, Math.round(s));
-  return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0");
-}
-function fmtSize(b){
-  if (b < 1024) return b+" B";
-  if (b < 1048576) return (b/1024).toFixed(1)+" KB";
-  return (b/1048576).toFixed(2)+" MB";
-}
-function slug(t){
-  return (t.trim().slice(0,42).replace(/[^\p{L}\p{N}\s-]/gu,"").replace(/\s+/g,"-").toLowerCase()||"speech").slice(0,48);
-}
-
-/* ---------- Chunking (≤500 chars for Edge TTS) ---------- */
-function chunkText(text, maxLen=500){
-  const clean = text.replace(/\s+/g," ").trim();
-  if (!clean) return [];
-  const sentences = clean.match(/[^.!?…。？！;]+[.!?…。？！;]*\s*/g) || [clean];
-  const chunks = [];
-  let cur = "";
-  const splitLong = (piece) => {
-    const words = piece.split(" ");
-    const out = [];
-    let line = "";
-    for (const w of words){
-      if ((line+" "+w).trim().length > maxLen){
-        if (line.trim()) out.push(line.trim());
-        line = w;
-      } else line = line ? line+" "+w : w;
+    function apiUrl() {
+      const text = encodeURIComponent(textEl.value.trim());
+      const voice = encodeURIComponent(voiceEl.value);
+      return `/api/tts?voice=${voice}&text=${text}`;
     }
-    if (line.trim()) out.push(line.trim());
-    return out;
-  };
-  for (const raw of sentences){
-    const p = raw.trim();
-    if (!p) continue;
-    if (p.length > maxLen){
-      if (cur){ chunks.push(cur); cur=""; }
-      const pieces = splitLong(p);
-      for (let i=0;i<pieces.length;i++){
-        if (i === pieces.length-1) cur = pieces[i];
-        else chunks.push(pieces[i]);
+
+    document.getElementById('playBtn').onclick = () => {
+      if (!textEl.value.trim()) return;
+      player.src = apiUrl();
+      player.play();
+    };
+
+    document.getElementById('downloadBtn').onclick = async () => {
+      if (!textEl.value.trim()) return;
+      statusEl.textContent = 'Generating MP3…';
+      try {
+        const res = await fetch(apiUrl());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'speech.mp3';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        statusEl.textContent = 'Downloaded ✅';
+      } catch (e) {
+        statusEl.textContent = 'Error: ' + e.message;
       }
-      continue;
-    }
-    if ((cur+" "+p).trim().length > maxLen){
-      if (cur) chunks.push(cur);
-      cur = p;
-    } else cur = cur ? cur+" "+p : p;
-  }
-  if (cur) chunks.push(cur);
-  return chunks.filter(c=>c.length);
-}
-
-/* ---------- Cloud synthesis via Netlify function ---------- */
-async function fetchChunk(text, voice, signal){
-  const url = "/.netlify/functions/tts?voice=" + encodeURIComponent(voice) +
-              "&text=" + encodeURIComponent(text);
-  const res = await fetch(url, { signal });
-  if (!res.ok) {
-    const errText = await res.text().catch(()=> "");
-    throw new Error("HTTP " + res.status + (errText ? ": " + errText : ""));
-  }
-  const b = await res.blob();
-  if (b.size < 200) throw new Error("Empty audio");
-  return b;
-}
-
-async function synthesizeCloud(text, langCode, onProgress){
-  const langObj = LANGUAGES.find(L => L.code === langCode) || LANGUAGES[0];
-  const voice = langObj.voice;
-  const chunks = chunkText(text, 500);
-  if (!chunks.length) throw new Error("Empty text");
-  const parts = [];
-  const controller = new AbortController();
-  state._abort = controller;
-  const myToken = ++state.cancelToken;
-
-  for (let i=0;i<chunks.length;i++){
-    if (myToken !== state.cancelToken) throw new Error("cancelled");
-    onProgress(i+1, chunks.length);
-    const blob = await fetchChunk(chunks[i], voice, controller.signal);
-    parts.push(blob);
-    if (i < chunks.length-1) await new Promise(r=>setTimeout(r,120));
-  }
-  return new Blob(parts, { type:"audio/mpeg" });
-}
-
-function currentKey(){
-  return state.lang + "|" + els.text.value.trim();
-}
-
-async function ensureAudio(){
-  const key = currentKey();
-  if (state.audioBlob && state.cacheKey === key) return state.audioBlob;
-  if (state.synthesizing) return null;
-
-  state.synthesizing = true;
-  els.playBtn.disabled = true;
-  els.downloadBtn.disabled = true;
-
-  try {
-    const blob = await synthesizeCloud(els.text.value, state.lang, (i,n)=>{
-      els.progressLabel.textContent = "Synthesizing " + i + " / " + n;
-      els.bar.style.width = (i/n*100).toFixed(1) + "%";
-    });
-    if (state.audioUrl) URL.revokeObjectURL(state.audioUrl);
-    state.audioBlob = blob;
-    state.audioUrl = URL.createObjectURL(blob);
-    state.cacheKey = key;
-    els.player.src = state.audioUrl;
-    els.progressLabel.textContent = "Ready";
-    els.progressTime.textContent = fmtSize(blob.size);
-    return blob;
-  } finally {
-    state.synthesizing = false;
-    els.playBtn.disabled = false;
-    els.downloadBtn.disabled = false;
-  }
-}
-
-/* ---------- Playback ---------- */
-async function playCloud(){
-  try {
-    if (!state.audioBlob || state.cacheKey !== currentKey()){
-      const b = await ensureAudio();
-      if (!b) return;
-    }
-    els.player.currentTime = 0;
-    els.player.volume = state.volume;
-    els.player.playbackRate = state.rate;
-    await els.player.play();
-  } catch(e){
-    if (e.message !== "cancelled") toast("Playback error: " + e.message);
-  }
-}
-
-async function onPlay(){ playCloud(); }
-function onPause(){
-  els.player.paused ? els.player.play() : els.player.pause();
-}
-function onStop(){
-  state.cancelToken++;
-  if (state._abort){ try { state._abort.abort(); } catch(e){} state._abort = null; }
-  els.player.pause(); els.player.currentTime = 0;
-  els.playBtn.disabled = false; els.pauseBtn.disabled = true; els.stopBtn.disabled = true;
-  els.bar.style.width = "0%";
-  els.progressLabel.textContent = "Stopped";
-}
-
-/* ---------- Download ---------- */
-async function onDownload(){
-  if (!els.text.value.trim()){ toast("Please enter some text."); return; }
-
-  els.downloadBtn.disabled = true;
-  els.downloadStatus.className = "status";
-  els.downloadStatus.textContent = "⏳ Synthesizing…";
-
-  try {
-    const blob = await ensureAudio();
-    if (!blob) throw new Error("Synthesis failed");
-    const filename = slug(els.text.value) + ".mp3";
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 60000);
-    els.downloadStatus.className = "status ok";
-    els.downloadStatus.textContent = "✅ Saved " + filename + "  (" + fmtSize(blob.size) + ")";
-  } catch(e){
-    if (e.message === "cancelled"){
-      els.downloadStatus.textContent = "Cancelled.";
-    } else {
-      els.downloadStatus.className = "status err";
-      els.downloadStatus.textContent = "❌ " + e.message;
-      toast("Download failed: " + e.message, 5000);
-    }
-  } finally {
-    els.downloadBtn.disabled = false;
-  }
-}
-
-/* ---------- Stats ---------- */
-function updateStats(){
-  const t = els.text.value;
-  const chars = t.length;
-  const words = t.trim() ? t.trim().split(/\s+/).filter(Boolean).length : 0;
-  const chunks = chunkText(t, 500).length;
-  const secs = (words / (165 * state.rate)) * 60;
-  els.counter.textContent = chars.toLocaleString() + " characters";
-  els.stats.textContent = words.toLocaleString() + " words · " + chunks + " segments · ~" + fmtTime(secs);
-}
-
-/* ---------- Wire up ---------- */
-for (const L of LANGUAGES){
-  const o = document.createElement("option");
-  o.value = L.code; o.textContent = L.label;
-  els.lang.appendChild(o);
-}
-els.lang.value = state.lang;
-
-els.lang.addEventListener("change", ()=>{
-  state.lang = els.lang.value;
-  state.audioBlob = null; state.cacheKey = null;
-  if (state.audioUrl){ URL.revokeObjectURL(state.audioUrl); state.audioUrl = null; }
-  els.player.removeAttribute("src");
-  updateStats();
-});
-
-els.rate.addEventListener("input", ()=>{
-  state.rate = parseFloat(els.rate.value);
-  els.rateVal.textContent = state.rate.toFixed(2)+"×";
-  els.player.playbackRate = state.rate;
-  updateStats();
-});
-els.volume.addEventListener("input", ()=>{
-  state.volume = parseFloat(els.volume.value);
-  els.volumeVal.textContent = Math.round(state.volume*100)+"%";
-  els.player.volume = state.volume;
-});
-
-els.playBtn.addEventListener("click", onPlay);
-els.pauseBtn.addEventListener("click", onPause);
-els.stopBtn.addEventListener("click", onStop);
-els.downloadBtn.addEventListener("click", onDownload);
-
-els.text.addEventListener("input", ()=>{
-  state.audioBlob = null; state.cacheKey = null;
-  updateStats();
-});
-
-els.clearBtn.addEventListener("click", ()=>{
-  onStop();
-  els.text.value = "";
-  state.audioBlob = null; state.cacheKey = null;
-  if (state.audioUrl){ URL.revokeObjectURL(state.audioUrl); state.audioUrl = null; }
-  els.player.removeAttribute("src");
-  updateStats(); els.text.focus();
-});
-
-els.sampleBtn.addEventListener("click", ()=>{
-  els.text.value =
-`Bonjour ! Ceci est une démonstration de synthèse vocale.
-
-VoxLux utilise les voix neuronales gratuites de Microsoft Edge TTS. Aucune inscription, aucune clé API. Vous pouvez choisir la langue, régler la vitesse et le volume, et télécharger le résultat en MP3 d'un simple clic.
-
-Hello! This is a text-to-speech demo using Microsoft Edge TTS. No registration, no API key. It supports French, English and Arabic, and downloads the result as an MP3 file in one click.
-
-مرحبا! هذا عرض توضيحي لتحويل النص إلى كلام باستخدام Microsoft Edge TTS. لا حاجة للتسجيل أو مفتاح API. يدعم اللغة العربية والفرنسية والإنجليزية، ويمكنك تنزيل النتيجة بصيغة MP3 بنقرة واحدة.`;
-  updateStats();
-});
-
-/* player events */
-els.player.addEventListener("timeupdate", ()=>{
-  const d = els.player.duration || 0;
-  const t = els.player.currentTime || 0;
-  if (d > 0){
-    els.bar.style.width = (t/d*100).toFixed(2)+"%";
-    els.progressLabel.textContent = fmtTime(t)+" / "+fmtTime(d);
-    els.progressTime.textContent = Math.round((1-t/d)*100)+"%";
-  }
-});
-els.player.addEventListener("play", ()=>{
-  els.playBtn.disabled = true; els.pauseBtn.disabled = false; els.stopBtn.disabled = false;
-});
-els.player.addEventListener("pause", ()=>{ els.playBtn.disabled = false; els.pauseBtn.disabled = true; });
-els.player.addEventListener("ended", ()=>{
-  els.playBtn.disabled = false; els.pauseBtn.disabled = true; els.stopBtn.disabled = true;
-  els.bar.style.width = "100%";
-});
-
-window.addEventListener("beforeunload", ()=>{
-  if (state.audioUrl) URL.revokeObjectURL(state.audioUrl);
-});
-
-updateStats();
-</script>
+    };
+  </script>
 </body>
 </html>
