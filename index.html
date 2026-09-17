@@ -338,10 +338,7 @@
       el.play.disabled = !hasText;
       el.download.disabled = !hasText;
 
-      el.hint.textContent = n > 200
-        ? "Long text — the fallback voice will be cut at 200 chars."
-        : "";
-      el.hint.classList.toggle("warn", n > 200);
+      
     }
 
     /* ---------- restore persisted state ---------- */
@@ -380,55 +377,62 @@
     });
 
     /* ---------- api ---------- */
-    function apiUrl() {
-      const text = encodeURIComponent(el.text.value.trim());
-      const voice = encodeURIComponent(el.voice.value);
-      return `/api/tts?voice=${voice}&text=${text}`;
-    }
+    /* ---------- api (POST — no URL length limit) ---------- */
+async function fetchAudio() {
+  const text = el.text.value.trim();
+  const voice = el.voice.value;
+  const res = await fetch("/api/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ voice, text }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return await res.blob();
+}
 
-    el.play.addEventListener("click", () => {
-      if (!el.text.value.trim()) return;
-      setStatus("Generating audio…");
-      el.player.src = apiUrl();
-      el.player.play().catch(() => {});
-    });
+el.play.addEventListener("click", async () => {
+  if (!el.text.value.trim()) return;
+  setStatus("Generating audio…");
+  el.play.disabled = true;
+  try {
+    const blob = await fetchAudio();
+    if (el.player.src) URL.revokeObjectURL(el.player.src);
+    el.player.src = URL.createObjectURL(blob);
+    await el.player.play();
+    setStatus("");
+  } catch (e) {
+    setStatus("Playback failed: " + e.message + " — try Download.", "err");
+  } finally {
+    el.play.disabled = false;
+  }
+});
 
-    el.player.addEventListener("canplay", () => setStatus(""));
-    el.player.addEventListener("error", () => {
-      if (!el.player.src) return;
-      setStatus("Playback failed — try Download instead.", "err");
-    });
+el.download.addEventListener("click", async () => {
+  if (!el.text.value.trim()) return;
 
-    el.download.addEventListener("click", async () => {
-      if (!el.text.value.trim()) return;
+  el.download.disabled = true;
+  const original = el.download.innerHTML;
+  el.download.innerHTML = '<span class="spinner"></span> Generating…';
+  setStatus("Generating MP3…");
 
-      el.download.disabled = true;
-      const original = el.download.innerHTML;
-      el.download.innerHTML = '<span class="spinner"></span> Generating…';
-      setStatus("Generating MP3…");
-
-      try {
-        const res = await fetch(apiUrl());
-        if (!res.ok) throw new Error("HTTP " + res.status);
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `speech-${el.voice.value}.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-
-        setStatus("Downloaded ✅", "ok");
-      } catch (e) {
-        setStatus("Error: " + e.message, "err");
-      } finally {
-        el.download.innerHTML = original;
-        el.download.disabled = !el.text.value.trim();
-      }
-    });
+  try {
+    const blob = await fetchAudio();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `speech-${el.voice.value}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setStatus("Downloaded ✅", "ok");
+  } catch (e) {
+    setStatus("Error: " + e.message, "err");
+  } finally {
+    el.download.innerHTML = original;
+    el.download.disabled = !el.text.value.trim();
+  }
+});
   </script>
 </body>
 </html>
