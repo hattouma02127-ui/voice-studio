@@ -23,7 +23,7 @@ API keys, no signup.
 ├── index.html                    # Documents Manager (hub)
 ├── dm_voiceStudio.html           # Voice Studio (hub)
 ├── dm_voiceStudio_TTS.html       # Text → Speech → MP3
-├── dm_voiceStudio_VS.html        # Voice Separator (placeholder)
+├── dm_voiceStudio_VS.html        # Voice Separator (6-band filter + WAV export)
 ├── tts.js              # Netlify Function: Edge TTS + Google fallback
 ├── netlify.toml        # build / function / redirect config
 ├── package.json

@@ -74,3 +74,10 @@ Architecture
 [ ] Extract shared hub CSS into dm.css once a 4th page appears
 [ ] Add a search/filter bar on Documents Manager when card count > ~8
 [ ] Consider a shared dm-header custom element to dedupe breadcrumbs
+
+[x] Voice Separator — 6-band filter, solo/mute, presets, WAV export per band
+[ ] Voice Separator: replace Web Audio biquad chain with Linkwitz-Riley
+      4th-order crossovers for cleaner band separation.
+[ ] Voice Separator: add stereo width / mid-side controls per band.
+[ ] Voice Separator: persist band settings in localStorage like TTS does.
+[ ] Voice Separator: sample-accurate loop region (drag on waveform).
